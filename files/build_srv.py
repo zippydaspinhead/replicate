@@ -32,14 +32,15 @@ key = open(args['--public_key'])
 public_key = {'/root/.ssh/authorized_keys': key}
 
 image = next(img for img in cs.images.list() if args['--image'] in img.name)
-flavor = next(flav for flav in cs.flavors.list() if args['--flavor'] in flav.name)
+flavor = next(flv for flv in cs.flavors.list() if args['--flavor'] in flv.name)
 
-build = cs.servers.create(args['<name>'], image.id,
-		            flavor.id, files = public_key)
-srv = pyrax.utils.wait_until(build, "status", ["ACTIVE", "ERROR"],
-                attempts = 0, interval = 20, verbose = True)
+req = cs.servers.create(args['<name>'], image.id, flavor.id,
+  files = public_key)
+build = pyrax.utils.wait_until(req, "status", ["ACTIVE", "ERROR"], attempts = 0,
+  interval = 30, verbose = False)
+srv = cs.servers.get(build.id)
 
-srv = cs.servers.get(srv.id)
+pub_ipv4 = next(addr for addr in srv.networks['public'] if '.' in addr)
 
 print "--"
-print "Public IP address: ", srv.networks['public'][0]
+print "Public IPv4 address: ", pub_ipv4
