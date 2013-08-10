@@ -37,8 +37,7 @@ flavor = next(flv for flv in cs.flavors.list() if args['--flavor'] in flv.name)
 
 request = cs.servers.create(args['<name>'], image.id, flavor.id,
   files = public_key)
-build = pyrax.utils.wait_until(request, "status", ["ACTIVE", "ERROR"], attempts = 0,
-  interval = 30, verbose = True)
+build = pyrax.utils.wait_for_build(request, verbose=True)
 server = cs.servers.get(build.id)
 
 public_ipv4 = next(addr for addr in server.networks['public'] if '.' in addr)
