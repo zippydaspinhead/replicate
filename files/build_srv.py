@@ -3,8 +3,8 @@
 """Build Cloud Server(s).
 
 Usage:
-  build_srv.py <name> [--flavor=<size>] [--image=<name>] [--username=<name>]
-                      [--public_key=<key>] [--region=<name>]
+  build_srv.py <name> [--flavor=<size>] [--image=<name>] [--public_key=<key>]
+                      [--region=<name>] [--username=<name>] 
   build_srv.py (-h | --help)
 
 Arguments:
@@ -13,22 +13,26 @@ Arguments:
 Options:
   -h --help           Show this screen.
   --flavor=<size>     Size of the instance. [default: 512MB]
-  --image=<name>      Name of an image to use. [default: Ubuntu 13.04]
-  --username=<name>   Keyring username for authentication.
-  --public_key=<key>  Path to your SSH public key.
+  --image=<name>      Name of an image to use. [default: CentOS 6.4]
+  --public_key=<key>  Path to your SSH public key. [default: ~/.ssh/id_rsa.pub]
   --region=<name>     Region to build in. [default: DFW]
+  --username=<name>   Keyring username for authentication.
 
 """
 from docopt import docopt
+from os.path import expanduser
 import pyrax
 
 args = docopt(__doc__, help = True)
 
 pyrax.set_setting('identity_type', 'rackspace')
 pyrax.keyring_auth(args['--username'])
-cs = pyrax.connect_to_cloudservers(region=args['--region'])
+cs = pyrax.connect_to_cloudservers(region = args['--region'])
 
-public_key = {'/root/.ssh/authorized_keys': open(args['--public_key'])}
+full_path =  ''.join([expanduser('~') if x == '~' else x \
+                     for x in list(args['--public_key'])])
+
+public_key = {'/root/.ssh/authorized_keys': open(full_path)}
 
 image = next(img for img in cs.images.list() if args['--image'] in img.name)
 flavor = next(flv for flv in cs.flavors.list() if args['--flavor'] in flv.name)
