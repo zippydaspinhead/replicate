@@ -4,7 +4,7 @@
 
 Usage:
   build_srv.py <name> [--flavor=<size>] [--image=<name>] [--public_key=<key>]
-                      [--region=<name>] [--username=<name>] 
+                      [--region=<name>] [--tag=<tag>]... [--username=<name>]
   build_srv.py (-h | --help)
 
 Arguments:
@@ -16,6 +16,7 @@ Options:
   --image=<name>      Name of an image to use. [default: CentOS 6.4]
   --public_key=<key>  Path to your SSH public key. [default: ~/.ssh/id_rsa.pub]
   --region=<name>     Region to build in. [default: DFW]
+  --tag=<tag>         Tag to append to server's metadata.
   --username=<name>   Keyring username for authentication.
 
 """
@@ -29,10 +30,7 @@ pyrax.set_setting('identity_type', 'rackspace')
 pyrax.keyring_auth(args['--username'])
 cs = pyrax.connect_to_cloudservers(region = args['--region'])
 
-full_path =  ''.join([expanduser('~') if x == '~' else x \
-                     for x in list(args['--public_key'])])
-
-public_key = {'/root/.ssh/authorized_keys': open(full_path)}
+public_key = {'/root/.ssh/authorized_keys': open(expanduser(args['--public_key']))}
 
 image = next(img for img in cs.images.list() if args['--image'] in img.name)
 flavor = next(flv for flv in cs.flavors.list() if args['--flavor'] in flv.name)
