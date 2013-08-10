@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Build Cloud Server(s).
+"""Build a Rackspace Cloud Server.
 
 Usage:
   build_srv.py <name> [--flavor=<size>] [--image=<name>] [--public_key=<key>]
