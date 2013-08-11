@@ -4,7 +4,7 @@
 
 Usage:
   build_srv.py <name> [--flavor=<size>] [--image=<name>] [--public_key=<key>]
-                      [--region=<name>] [--tag=<tag>]... [--username=<name>]
+                      [--region=<name>] [--username=<name>]
   build_srv.py (-h | --help)
 
 Arguments:
@@ -16,7 +16,6 @@ Options:
   --image=<name>      Name of an image to use. [default: CentOS 6.4]
   --public_key=<key>  Path to your SSH public key. [default: ~/.ssh/id_rsa.pub]
   --region=<name>     Region to build in. [default: DFW]
-  --tag=<tag>         Tag to append to server's metadata.
   --username=<name>   Keyring username for authentication.
 
 """
@@ -44,3 +43,4 @@ public_ipv4 = next(addr for addr in server.networks['public'] if '.' in addr)
 
 print "--"
 print "Public IPv4 address: ", public_ipv4
+
