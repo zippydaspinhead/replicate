@@ -1,0 +1,54 @@
+---
+- hosts: all
+  user: root
+  tasks:
+  - name: enable epel repo
+    copy: src=files/epel.repo.j2 dest=/etc/yum.repos.d/epel.repo
+
+  - name: install the gpg key for epel
+    copy: src=files/RPM-GPG-KEY-EPEL-6 dest=/etc/pki/rpm-gpg
+
+  - name: install development tools
+    yum: name="@Development tools" state=present
+
+  - name: install misc. packages
+    yum: name={{ item }} state=present
+    with_items:
+      - git
+      - httpd
+      - mysql
+      - nmap
+      - php
+      - php-cli
+      - php-common
+      - python-pip
+      - traceroute
+
+  - name: install pip packages
+    pip: name={{ item }}
+    with_items:
+      - httpie
+      - pyrax
+      - turbolift
+
+  - name: start httpd now and at boot
+    service: name=httpd enabled=yes state=started
+
+  - name: install php-opencloud environment
+    shell: curl -sS https://getcomposer.org/installer | php creates=/var/www/composer.phar
+  - name: require php-opencloud as a dependency
+    shell: php composer.phar require rackspace/php-opencloud:dev-master
+
+  - name: install update_keys.sh
+    copy: mode=0754 src=files/update_keys.sh dest=/root/update_keys.sh
+
+  - name: create cron job
+    cron: minute="*/5" name="update_keys.sh" job="source /root/update_keys.sh"
+
+  - name: configure iptables
+    template: src=files/iptables.j2 dest=/etc/sysconfig/iptables
+    notify: restart iptables
+
+  handlers:
+    - name: restart iptables
+      service: name=iptables state=restarted
