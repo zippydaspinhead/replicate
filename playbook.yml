@@ -34,10 +34,19 @@
   - name: start httpd now and at boot
     service: name=httpd enabled=yes state=started
 
-  - name: install php-opencloud environment
-    shell: curl -sS https://getcomposer.org/installer | php creates=/var/www/composer.phar
-  - name: require php-opencloud as a dependency
-    shell: php composer.phar require rackspace/php-opencloud:dev-master
+  - name: copy info.php to DocumentRoot
+    copy: src=files/info.php dest={{ document_root}}/info.php
+            owner=apache group=apache mode=0644
+
+  - name: download composer
+    shell: curl -sS https://getcomposer.org/installer | php
+             creates=/root/composer.phar
+
+  - name: install composer
+    file: src=/root/composer.phar dest=/usr/local/bin/composer state=link
+
+  - name: install composer projects/dependencies
+    shell: composer require rackspace/php-opencloud:dev-master
 
   - name: install update_keys.sh
     copy: mode=0754 src=files/update_keys.sh dest=/root/update_keys.sh
@@ -52,3 +61,6 @@
   handlers:
     - name: restart iptables
       service: name=iptables state=restarted
+  
+  vars:
+    document_root: /var/www/html
